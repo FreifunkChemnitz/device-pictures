@@ -47,3 +47,36 @@ In the [firmware-selector](https://github.com/freifunk-darmstadt/gluon-firmware-
 ```
 
 to use the updated central source of jpg files.
+
+## Container image
+
+A ready-to-serve container image is published to the GitHub Container Registry.
+It renders the SVG sources to JPG/PNG at build time and serves `pictures-svg/`,
+`pictures-jpg/` and `pictures-png/` (including the version-alias symlinks) via
+nginx on port 80. `Access-Control-Allow-Origin: *` is set so meshviewer and
+firmware-selector can fetch the images cross-origin.
+
+```
+docker run --rm -p 8080:80 ghcr.io/freifunkchemnitz/device-pictures:latest
+```
+
+The images are then available under
+`http://localhost:8080/pictures-svg/{MODEL_NORMALIZED}.svg` and
+`http://localhost:8080/pictures-jpg/`. A health endpoint is exposed at `/healthz`.
+
+Build it locally with `docker build -t device-pictures .`.
+
+### Versioning
+
+Every push to `main` that touches the pictures or the build (see the `paths:`
+filter in `.github/workflows/docker-publish.yml`) automatically:
+
+1. increases the **minor** version of the latest `vX.Y.Z` git tag
+   (first release is `v1.0.0`),
+2. creates and pushes that tag,
+3. builds and pushes the image as `:X.Y.Z`, `:X.Y`, `:X` and `:latest`,
+4. creates a GitHub release with auto-generated notes.
+
+Run the workflow manually (*Actions → Build and Publish Container → Run
+workflow*) to pick a `major` or `patch` bump instead. Pull requests only build
+the image (tagged `:pr-<number>`) without pushing or tagging.

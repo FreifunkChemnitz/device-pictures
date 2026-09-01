@@ -1,0 +1,7 @@
+.git
+.github
+scripts
+pictures-jpg
+pictures-png
+*.orig
+LICENSE.md
